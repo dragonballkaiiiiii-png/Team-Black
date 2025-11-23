@@ -1,0 +1,112 @@
+-- Executor Team Black persistente e customizado (Roblox Lua)
+local CoreGui = game:GetService("CoreGui")
+local UIS = game:GetService("UserInputService")
+
+-- Criar ScreenGui sempre em CoreGui para ser persistente
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "TeamBlackExecutor"
+screenGui.Parent = CoreGui
+
+local mainFrame = Instance.new("Frame", screenGui)
+mainFrame.Size = UDim2.new(0, 540, 0, 320)
+mainFrame.Position = UDim2.new(0.5, -270, 0.5, -160)
+mainFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+mainFrame.BorderSizePixel = 3
+mainFrame.BorderColor3 = Color3.new(1, 1, 1)
+mainFrame.Active = true
+
+-- Título central Team Black
+local title = Instance.new("TextLabel", mainFrame)
+title.Size = UDim2.new(0.6, 0, 0.13, 0)
+title.Position = UDim2.new(0.2, 0, 0.01, 0)
+title.BackgroundTransparency = 1
+title.Text = "Team Black"
+title.TextColor3 = Color3.new(1,1,1)
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 32
+
+-- Área restrita com barra de rolagem (scripts grandes)
+local scrollFrame = Instance.new("ScrollingFrame", mainFrame)
+scrollFrame.Size = UDim2.new(0.86, 0, 0.48, 0)
+scrollFrame.Position = UDim2.new(0.07, 0, 0.16, 0)
+scrollFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+scrollFrame.CanvasSize = UDim2.new(0,0,2,0) -- Ajuste para scripts maiores
+scrollFrame.BorderSizePixel = 0
+scrollFrame.ScrollBarThickness = 8
+scrollFrame.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
+
+local scriptBox = Instance.new("TextBox", scrollFrame)
+scriptBox.Size = UDim2.new(1, 0, 1, 0)
+scriptBox.BackgroundTransparency = 1
+scriptBox.TextColor3 = Color3.new(1,1,1)
+scriptBox.Text = ""
+scriptBox.MultiLine = true
+scriptBox.Font = Enum.Font.Code
+scriptBox.TextSize = 18
+scriptBox.ClearTextOnFocus = false
+scriptBox.TextWrapped = true
+scriptBox.TextXAlignment = Enum.TextXAlignment.Left
+scriptBox.TextYAlignment = Enum.TextYAlignment.Top
+
+-- Botão EXECUTAR (maior, à esquerda)
+local executeBtn = Instance.new("TextButton", mainFrame)
+executeBtn.Size = UDim2.new(0.24, 0, 0.14, 0)
+executeBtn.Position = UDim2.new(0.02, 0, 0.84, 0)
+executeBtn.BackgroundColor3 = Color3.fromRGB(20,20,20)
+executeBtn.TextColor3 = Color3.new(1,1,1)
+executeBtn.Text = "Executar"
+executeBtn.Font = Enum.Font.SourceSansBold
+executeBtn.TextSize = 22
+
+-- Botão CLEAR (à direita)
+local clearBtn = Instance.new("TextButton", mainFrame)
+clearBtn.Size = UDim2.new(0.24, 0, 0.14, 0)
+clearBtn.Position = UDim2.new(0.74, 0, 0.84, 0)
+clearBtn.BackgroundColor3 = Color3.fromRGB(20,20,20)
+clearBtn.TextColor3 = Color3.new(1,1,1)
+clearBtn.Text = "Clear"
+clearBtn.Font = Enum.Font.SourceSansBold
+clearBtn.TextSize = 22
+
+-- Função do botão EXECUTAR (loadstring)
+executeBtn.MouseButton1Click:Connect(function()
+    local scriptText = scriptBox.Text
+    local func = loadstring(scriptText)
+    if func then
+        pcall(func)
+    end
+end)
+
+-- Função do botão CLEAR
+clearBtn.MouseButton1Click:Connect(function()
+    scriptBox.Text = ""
+end)
+
+-- Movimento suave e livre (mouse/touch)
+local dragging = false
+local dragStart, startPos
+
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
